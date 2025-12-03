@@ -1,12 +1,12 @@
 {
-  "name": "bundle-n-require",
+  "name": "bundle-n-require-553",
   "version": "1.1.2",
   "description": "Require and bundle Typescript and Javascript files in NodeJS",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "scripts": {
     "build": "tsup src --format cjs,esm --shims --dts",
-    "pub": "pnpm build && pnpm publish --no-git-checks --access public",
+    "pub": "pnpm build && pnpm publish --no-git-checks",
     "clean": "rimraf dist"
   },
   "keywords": [
@@ -19,9 +19,6 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "author": "Segun Adebayo <joseshegs@gmail.com>",
   "license": "MIT",
   "dependencies": {
@@ -32,7 +29,13 @@
     "@types/node": "^22.13.10",
     "rimraf": "^6.0.1",
     "tsup": "^8.4.0",
-    "typescript": "^5.8.2"
+    "typescript": "=5.5.3"
   },
-  "packageManager": "pnpm@9.15.6+sha512.139cab068fdf0b751268179ac5f909b5be72afb4a75c513d1905d151befc8977b593d3cf8671ed83d4d6637c5c94b98ffbce108125de4a5a27a31233601a99de"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ari-party/bundle-n-require-553.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
 }
