@@ -11,13 +11,12 @@ import type { BuildOptions } from "esbuild";
 async function bundleConfigFile(
   file: string,
   cwd: string,
-  options?: BuildOptions,
-  browser?: boolean
+  options?: BuildOptions
 ) {
   const result = await build({
     platform: "node",
     format: "cjs",
-    mainFields: ["module", browser ? "browser" : "main"],
+    mainFields: ["module", "main"],
     ...options,
     absWorkingDir: cwd,
     entryPoints: [file],
@@ -68,9 +67,7 @@ function loadBundledFile(file: string, code: string): Promise<any> {
 
 export interface BundleNRequireOptions {
   cwd?: string;
-  interopDefault?: boolean;
   esbuildOptions?: BuildOptions;
-  browser?: boolean;
 }
 
 export interface BundleResult {
@@ -83,11 +80,11 @@ export async function bundleNRequire(
   file: string,
   opts: BundleNRequireOptions = {}
 ) {
-  const { cwd = process.cwd() } = opts;
+  const { cwd = process.cwd(), esbuildOptions } = opts;
   const absPath = require.resolve(file, { paths: [cwd] });
 
   const bundle = <BundleResult>(
-    await bundleConfigFile(absPath, cwd, opts.esbuildOptions, opts.browser)
+    await bundleConfigFile(absPath, cwd, esbuildOptions)
   );
 
   try {
