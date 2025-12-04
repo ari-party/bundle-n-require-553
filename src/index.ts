@@ -1,6 +1,8 @@
-import { type BuildOptions, build } from 'esbuild'
-import path from 'path'
-import fs from 'fs'
+import { build } from "esbuild";
+import path from "path";
+import fs from "fs";
+
+import type { BuildOptions } from "esbuild";
 
 /* -----------------------------------------------------------------------------
  * Bundle a file and return the result
@@ -9,28 +11,29 @@ import fs from 'fs'
 async function bundleConfigFile(
   file: string,
   cwd: string,
-  options?: BuildOptions
+  options?: BuildOptions,
+  browser?: boolean
 ) {
   const result = await build({
-    platform: 'node',
-    format: 'cjs',
-    mainFields: ['module', 'main'],
+    platform: "node",
+    format: "cjs",
+    mainFields: ["module", browser ? "browser" : "main"],
     ...options,
     absWorkingDir: cwd,
     entryPoints: [file],
-    outfile: 'out.js',
+    outfile: "out.js",
     write: false,
     bundle: true,
     sourcemap: false,
     metafile: true,
-  })
+  });
 
-  const { text } = result.outputFiles[0]
+  const { text } = result.outputFiles[0];
 
   return {
     code: text,
     dependencies: result.metafile ? Object.keys(result.metafile.inputs) : [],
-  }
+  };
 }
 
 /* -----------------------------------------------------------------------------
@@ -38,25 +41,25 @@ async function bundleConfigFile(
  * -----------------------------------------------------------------------------*/
 
 function loadBundledFile(file: string, code: string): Promise<any> {
-  const extension = path.extname(file)
-  const realFileName = fs.realpathSync.native(file)
+  const extension = path.extname(file);
+  const realFileName = fs.realpathSync.native(file);
 
-  const loader = require.extensions[extension]!
+  const loader = require.extensions[extension]!;
 
   require.extensions[extension] = (mod: any, filename: string) => {
     if (filename === realFileName) {
-      mod._compile(code, filename)
+      mod._compile(code, filename);
     } else {
-      loader(mod, filename)
+      loader(mod, filename);
     }
-  }
+  };
 
-  delete require.cache[require.resolve(file)]
+  delete require.cache[require.resolve(file)];
 
-  const raw = require(file)
-  const result = raw.default ?? raw
-  require.extensions[extension] = loader
-  return result
+  const raw = require(file);
+  const result = raw.default ?? raw;
+  require.extensions[extension] = loader;
+  return result;
 }
 
 /* -----------------------------------------------------------------------------
@@ -64,31 +67,34 @@ function loadBundledFile(file: string, code: string): Promise<any> {
  * -----------------------------------------------------------------------------*/
 
 export interface BundleNRequireOptions {
-  cwd?: string
-  interopDefault?: boolean
-  esbuildOptions?: BuildOptions
+  cwd?: string;
+  interopDefault?: boolean;
+  esbuildOptions?: BuildOptions;
+  browser?: boolean;
 }
 
 export interface BundleResult {
-  mod: any
-  dependencies: string[]
-  code: string
+  mod: any;
+  dependencies: string[];
+  code: string;
 }
 
 export async function bundleNRequire(
   file: string,
   opts: BundleNRequireOptions = {}
 ) {
-  const { cwd = process.cwd() } = opts
-  const absPath = require.resolve(file, { paths: [cwd] })
+  const { cwd = process.cwd() } = opts;
+  const absPath = require.resolve(file, { paths: [cwd] });
 
-  const bundle = <BundleResult>await bundleConfigFile(absPath, cwd)
+  const bundle = <BundleResult>(
+    await bundleConfigFile(absPath, cwd, opts.esbuildOptions, opts.browser)
+  );
 
   try {
-    bundle.mod = await loadBundledFile(absPath, bundle.code)
+    bundle.mod = await loadBundledFile(absPath, bundle.code);
   } catch {
-    bundle.mod = require('node-eval')(bundle.code).default
+    bundle.mod = require("node-eval")(bundle.code).default;
   }
 
-  return bundle
+  return bundle;
 }
