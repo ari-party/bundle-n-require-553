@@ -78,7 +78,7 @@ export async function bundleNRequire(
   file: string,
   opts: BundleNRequireOptions = {}
 ) {
-  const { cwd = process.cwd(), esbuildOptions = {} } = opts
+  const { cwd = process.cwd(), esbuildOptions } = opts
   const absPath = require.resolve(file, { paths: [cwd] })
 
   const bundle = <BundleResult>await bundleConfigFile(absPath, cwd, esbuildOptions)
