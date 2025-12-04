@@ -65,7 +65,6 @@ function loadBundledFile(file: string, code: string): Promise<any> {
 
 export interface BundleNRequireOptions {
   cwd?: string
-  interopDefault?: boolean
   esbuildOptions?: BuildOptions
 }
 
@@ -79,10 +78,10 @@ export async function bundleNRequire(
   file: string,
   opts: BundleNRequireOptions = {}
 ) {
-  const { cwd = process.cwd() } = opts
+  const { cwd = process.cwd(), esbuildOptions = {} } = opts
   const absPath = require.resolve(file, { paths: [cwd] })
 
-  const bundle = <BundleResult>await bundleConfigFile(absPath, cwd)
+  const bundle = <BundleResult>await bundleConfigFile(absPath, cwd, esbuildOptions)
 
   try {
     bundle.mod = await loadBundledFile(absPath, bundle.code)
